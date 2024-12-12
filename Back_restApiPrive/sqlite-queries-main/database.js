@@ -1,3 +1,4 @@
+
 const sqlite3 = require("sqlite3").verbose()
 require("dotenv").config()
 
@@ -11,10 +12,11 @@ const db = new sqlite3.Database(process.env.DB_FILE, (err) => {
 		// Create the cars table if it doesn't exist
 		db.run(
 			`CREATE TABLE IF NOT EXISTS cars (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id INTEGER PRIMARY KEY,
         carName TEXT NOT NULL,
         carYear NUMBER NOT NULL,
-        carImage TEXT NOT NULL
+        carImage TEXT NOT NULL,
+		userId INTEGER NOT NULL
       )`,
 			(err) => {
 				if (err) {
@@ -31,6 +33,7 @@ const db = new sqlite3.Database(process.env.DB_FILE, (err) => {
         lastName TEXT NOT NULL,
         imageUrl TEXT NOT NULL,
         email TEXT NOT NULL,
+        userName TEXT NOT NULL,
 		items TEXT
       )`,
 			(err) => {
