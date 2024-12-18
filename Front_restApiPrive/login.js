@@ -63,26 +63,30 @@ function showError(error) {
 }
 
 function logIn(formdata) {
-	const url = "http://localhost:3000/api/users/login"
-	fetch(url, {
-		method: "POST",
-		headers: {
-			"x-api-key": "secret_phrase_here",
-			"Content-Type": "application/json",
-			Accept: "application/json",
-		},
-		body: JSON.stringify(formdata),
-	})
-		.then((res) => {
-			if (!res.ok) {
-				throw new Error("Identifiants incorrects")
-			}
-			return res.text().then((data) => {
-				console.log(data)
-				localStorage.setItem("_id", data)
-			})
-		})
-		.catch((error) => {
-			showError(error)
-		})
+    const url = "http://localhost:3000/api/users/login";
+    fetch(url, {
+        method: "POST",
+        headers: {
+            "x-api-key": "secret_phrase_here",
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        },
+        body: JSON.stringify(formdata),
+    })
+        .then((res) => {
+            if (!res.ok) {
+                throw new Error("Identifiants incorrects");
+            }
+            return res.json();
+        })
+        .then((data) => {
+            console.log(data);
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("userImg", data.userImg); // Stocker l'URL de l'image
+            localStorage.setItem("userName", data.userName); // Stocker le nom d'utilisateur
+            window.location.href = "./index.html"; // Redirection après connexion
+        })
+        .catch((error) => {
+            showError(error);
+        });
 }
