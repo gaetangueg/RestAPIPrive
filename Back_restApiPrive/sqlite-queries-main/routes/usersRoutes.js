@@ -10,8 +10,11 @@ const {
 	getOneUserById,
 	signUp,
 	logIn,
+	checkUserAuth,
+	updateUserById,
 } = require("../controllers/usersController")
 const { userValidation } = require("../middleware/userValidation")
+const { checkToken } = require("../middleware/checkToken")
 
 usersRouter.get("/test", (_req, res) => {
 	res.json({
@@ -26,13 +29,15 @@ usersRouter.get("/", getAllUsers)
 usersRouter.get("/:id", getOneUserById)
 
 // POST add a new user (sign up)
-usersRouter.post("/", userValidation, signUp)
+usersRouter.post("/signup", userValidation, signUp)
+
+usersRouter.post("/check", checkToken, checkUserAuth)
 
 // POST add a validate user (log in)
 usersRouter.post("/login", userValidation, logIn)
 
 // PUT update a car based on the param id
-usersRouter.put("/:id", updateCarById)
+usersRouter.put("/:id", updateUserById)
 
 // DELETE delete a car based on the param id
 usersRouter.delete("/:id", deleteCarById)

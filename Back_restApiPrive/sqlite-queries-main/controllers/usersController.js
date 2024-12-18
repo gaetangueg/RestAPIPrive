@@ -91,7 +91,11 @@ exports.logIn = (req, res) => {
 				const decoded = await jwt.verify(token, process.env.SECRET_PHRASE_TOKEN)
 				console.log(decoded.user.id)
 
-				return res.json({ token, _id: decoded.user.id })
+				return res.json({
+					token,
+					_id: decoded.user.id,
+					userImg: decoded.user.imageUrl,
+				})
 			}
 		}
 	})
@@ -101,28 +105,65 @@ exports.logIn = (req, res) => {
 exports.updateUserById = async (req, res) => {
 	const userId = req.params.id
 	const userDetails = req.body
-	console.log(userId, userDetails)
 
-	// essayez de trouver l'utilisateur avec cet identifiant
+	// Attempt to find the user with this ID
 	db.get(
 		"SELECT * FROM users WHERE id = ?",
 		[parseInt(userId)],
-		(err, rows) => {
+		(err, user) => {
 			if (err) {
 				return res.status(500).json({ error: err.message })
-			} else {
-				if (!rows) {
-					return res
-						.status(404)
-						.json({ error: "user not found with this ID: " + userId })
-				} else {
-					console.log(rows)
-					// update the user with precious data
-
-					// Lancez la requête pour la mise à jour.
-					res.status(200).json({ message: "Car updated !" })
-				}
 			}
+
+			if (!user) {
+				return res
+					.status(404)
+					.json({ error: `User not found with this ID: ${userId}` })
+			}
+
+			// List of fields that can be updated
+			const updatableFields = [
+				"firstName",
+				"lastName",
+				"imageUrl",
+				"email",
+				"items",
+			]
+
+			// Filter and build the new user data
+			const newUserData = { ...user }
+
+			updatableFields.forEach((field) => {
+				if (userDetails[field] !== undefined) {
+					newUserData[field] = userDetails[field]
+				}
+			})
+
+			// Generate the SET clause for the SQL query dynamically
+			const updates = Object.keys(newUserData)
+				.filter((key) => key !== "id") // Exclude the ID field
+				.map((key) => `${key} = ?`)
+				.join(", ")
+
+			const values = Object.keys(newUserData)
+				.filter((key) => key !== "id")
+				.map((key) => newUserData[key])
+
+			// Execute the update query
+			db.run(
+				`UPDATE users SET ${updates} WHERE id = ?`,
+				[...values, userId],
+				(updateErr) => {
+					if (updateErr) {
+						return res.status(500).json({ error: updateErr.message })
+					}
+
+					res.status(200).json({
+						message: "User updated successfully!",
+						updatedUser: newUserData,
+					})
+				}
+			)
 		}
 	)
 }
